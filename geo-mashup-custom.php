@@ -2,14 +2,14 @@
 Plugin Name: Geo Mashup Custom
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/downloads
 Description: Provides a home for customization files for the Geo Mashup plugin so they aren't deleted during Geo Mashup upgrades. When this plugin is active, Geo Mashup will use these files and you can <a href="?geo_mashup_custom_list=1">list current custom files</a> here. Subfolders are okay for your own use, but won't be listed.
-Version: 1.0
+Version: 1.0.1
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 2.6
 */
 
 /*
-Copyright (c) 2005-2009 Dylan Kuhn
+Copyright (c) 2005-2018 Dylan Kuhn
 
 This program is free software; you can redistribute it
 and/or modify it under the terms of the GNU General Public
@@ -29,17 +29,17 @@ details.
  */
 if ( !class_exists( 'GeoMashupCustom' ) ) {
 class GeoMashupCustom {
-	var $files = array();
-	var $found_files;
-	var $dir_path;
-	var $url_path;
-	var $basename;
-	var $warnings = '';
+	public $files = array();
+	public $found_files;
+	public $dir_path;
+	public $url_path;
+	public $basename;
+	public $warnings = '';
 
 	/**
-	 * PHP4 Constructor
+	 * Instantiate a Geo Mashup Customization
 	 */
-	function GeoMashupCustom() {
+	public function __construct() {
 
 		// Initialize members
 		$this->dir_path = dirname( __FILE__ );
@@ -68,7 +68,7 @@ class GeoMashupCustom {
 	/**
 	 * Once all plugins are loaded, we can examine Geo Mashup.
 	 */
-	function plugins_loaded() {
+	public function plugins_loaded() {
 		if ( defined( 'GEO_MASHUP_DIR_PATH' ) ) {
 			// Check version
 			if ( GEO_MASHUP_VERSION <= '1.2.4' ) {
@@ -86,7 +86,7 @@ class GeoMashupCustom {
 	/**
 	 * Rescue known custom files from the Geo Mashup folder.
 	 */
-	function rescue_files() {
+	public function rescue_files() {
 		$results = array( 'ok' => array(), 'failed' => array() );
 		$check_files = array( 'custom.js', 'map-style.css', 'info-window.php', 'full-post.php', 'user.php', 'comment.php' );
 		foreach( $check_files as $file ) {
@@ -112,7 +112,7 @@ class GeoMashupCustom {
 	 * @param object $plugin_data Plugin data.
 	 * @param string $context 'active', 'inactive', etc.
 	 */
-	function after_plugin_row( $plugin_data = null, $context = '' ) {
+	public function after_plugin_row( $plugin_data = null, $context = '' ) {
 		if ( !empty( $_GET['geo_mashup_custom_list'] ) ) {
 			echo '<tr><td colspan="5">' . __( 'Current custom files: ', 'GeoMashupCustom') .
 				implode( ', ', array_keys( $this->files ) ) . '</td></tr>';
@@ -128,7 +128,7 @@ class GeoMashupCustom {
 	 * @param string $file The custom file to check for.
 	 * @return URL or false if the file is not found.
 	 */
-	function file_url( $file ) {
+	public function file_url( $file ) {
 		$url = false;
 		if ( isset( $this->files[$file] ) ) {
 			$url = $this->files[$file];

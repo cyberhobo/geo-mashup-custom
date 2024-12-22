@@ -2,7 +2,7 @@
 Plugin Name: Geo Mashup Custom
 Plugin URI: http://code.google.com/p/wordpress-geo-mashup/downloads
 Description: Provides a home for customization files for the Geo Mashup plugin so they aren't deleted during Geo Mashup upgrades. When this plugin is active, Geo Mashup will use these files and you can <a href="?geo_mashup_custom_list=1">list current custom files</a> here. Subfolders are okay for your own use, but won't be listed.
-Version: 1.0.1
+Version: 1.0.2
 Author: Dylan Kuhn
 Author URI: http://www.cyberhobo.net/
 Minimum WordPress Version Required: 2.6
@@ -42,27 +42,33 @@ class GeoMashupCustom {
 	public function __construct() {
 
 		// Initialize members
-		$this->dir_path = dirname( __FILE__ );
+		$this->dir_path = __DIR__;
 		$this->basename = plugin_basename( __FILE__ );
-		$dir_name = substr( $this->basename, 0, strpos( $this->basename, '/' ) );
-		$this->url_path = trailingslashit( WP_PLUGIN_URL ) . $dir_name;
-		load_plugin_textdomain( 'GeoMashupCustom', 'wp-content/plugins/'.$dir_name, $dir_name );
-		
-		// Inventory custom files
-		if ( $dir_handle = @ opendir( $this->dir_path ) ) {
-			$self_file = basename( __FILE__ );
-			while ( ( $custom_file = readdir( $dir_handle ) ) !== false ) {
-				if ( $self_file != $custom_file && !strpos( $custom_file, '-sample' ) && !is_dir( $custom_file ) ) {
-					$this->files[$custom_file] = trailingslashit( $this->url_path ) . $custom_file;
-				}
-			}
-		}
+
+		// Initialize
+		add_action('init', array( $this, 'init' ) );
 
 		// Scan Geo Mashup after it has been loaded
 		add_action( 'plugins_loaded', array( $this, 'plugins_loaded' ) );
 
 		// Output messages
 		add_action( 'after_plugin_row_' . $this->basename, array( $this, 'after_plugin_row' ), 10, 2 );
+	}
+
+	public function init() {
+		$dir_name = substr( $this->basename, 0, strpos( $this->basename, '/' ) );
+		$this->url_path = trailingslashit( WP_PLUGIN_URL ) . $dir_name;
+		load_plugin_textdomain( 'GeoMashupCustom', 'wp-content/plugins/'.$dir_name, $dir_name );
+
+		// Inventory custom files
+		if ( $dir_handle = @ opendir( $this->dir_path ) ) {
+			$self_file = basename( __FILE__ );
+			while ( ( $custom_file = readdir( $dir_handle ) ) !== false ) {
+				if ( $self_file !== $custom_file && !strpos( $custom_file, '-sample' ) && !is_dir( $custom_file ) ) {
+					$this->files[$custom_file] = trailingslashit( $this->url_path ) . $custom_file;
+				}
+			}
+		}
 	}
 
 	/**
@@ -96,9 +102,9 @@ class GeoMashupCustom {
 					$safe_file = trailingslashit( $this->dir_path ) . $file; 
 					if ( copy( $endangered_file, $safe_file ) ) {
 						$this->file[$file] = trailingslashit( $this->url_path ) . $file;
-						array_push( $results['ok'], $file );
+						$results['ok'][]   = $file;
 					} else {
-						array_push( $results['failed'], $file );
+						$results['failed'][] = $file;
 					}
 				}
 			}
@@ -126,7 +132,7 @@ class GeoMashupCustom {
 	 * Get the URL of a custom file if it exists.
 	 *
 	 * @param string $file The custom file to check for.
-	 * @return URL or false if the file is not found.
+	 * @return string URL or false if the file is not found.
 	 */
 	public function file_url( $file ) {
 		$url = false;
